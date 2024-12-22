@@ -8,6 +8,7 @@ import (
 
 	"github.com/KonovalovIly/anki_pdf/database/model"
 	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 )
 
 func SetupEnvironment() (*Application, *sql.DB) {
