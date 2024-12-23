@@ -140,3 +140,42 @@ func saveBookToLocal(resultFileName string, file multipart.File) error {
 func deleteBookFromLocal(resultFileName string) error {
 	return os.Remove(resultFileName)
 }
+
+func (s *BookStorage) NewWordsUser(ctx context.Context, userID int64, bookID int64, count int) ([]*WordDto, *DatabaseError) {
+	query := `
+		SELECT bw.word_id, SUM(bw.frequency) AS total_frequency
+		FROM books_words bw
+		LEFT JOIN users_words uw ON bw.word_id = uw.word_id AND uw.user_id = $1
+		WHERE bw.book_id = $2
+		AND (uw.user_id IS NULL OR uw.is_learned = FALSE)
+		GROUP BY bw.word_id
+		ORDER BY total_frequency DESC
+		LIMIT $3;
+	`
+
+	rows, err := s.db.QueryContext(
+		ctx,
+		query,
+		userID,
+		bookID,
+		count,
+	)
+
+	if err != nil {
+		return nil, ProcessErrorFromDatabase(err)
+	}
+	defer rows.Close()
+	wordDtos := make([]*WordDto, 0)
+	for rows.Next() {
+		wordDto := &WordDto{}
+		err := rows.Scan(
+			&wordDto.ID,
+			&wordDto.Frequency,
+		)
+		if err != nil {
+			return nil, ProcessErrorFromDatabase(err)
+		}
+		wordDtos = append(wordDtos, wordDto)
+	}
+	return wordDtos, nil
+}

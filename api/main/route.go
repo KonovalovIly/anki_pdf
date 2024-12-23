@@ -26,7 +26,11 @@ func (app *Application) mount() http.Handler {
 		r.Route("/book", func(r chi.Router) {
 
 			r.Post("/upload", app.bookUploadHandler)
-			r.Get("/{bookID}", app.bookGetHandler)
+
+			r.Route("/{bookID}", func(r chi.Router) {
+				r.Get("/", app.bookGetHandler)
+				r.Get("/new_words", app.getNewWordsForBookHandler)
+			})
 		})
 	})
 

@@ -13,6 +13,7 @@ type WordDto struct {
 	Example       sql.NullString `json:"example"`
 	WordLevel     sql.NullString `json:"word_level"`
 	Translations  sql.NullString `json:"translations"`
+	Frequency     sql.NullInt16  `json:"frequency"`
 }
 
 type WordStorage struct {
