@@ -20,6 +20,34 @@ type WordStorage struct {
 	db *sql.DB
 }
 
+func (s *WordStorage) GetWordById(ctx context.Context, wordId int64) (*WordDto, *DatabaseError) {
+	// Implement getting logic here
+	query := `SELECT id, word, transcription, meaning, example, word_level, translation FROM words WHERE id = $1`
+	ctx, cancel := context.WithTimeout(ctx, QueryRowTimeout)
+	defer cancel()
+
+	wordDto := &WordDto{}
+	err := s.db.QueryRowContext(
+		ctx,
+		query,
+		wordId,
+	).Scan(
+		&wordDto.ID,
+		&wordDto.Word,
+		&wordDto.Transcription,
+		&wordDto.Meaning,
+		&wordDto.Example,
+		&wordDto.WordLevel,
+		&wordDto.Translations,
+	)
+
+	if err != nil {
+		return nil, ProcessErrorFromDatabase(err)
+	}
+
+	return wordDto, nil
+}
+
 func (s *WordStorage) GetWord(ctx context.Context, text string) (*WordDto, *DatabaseError) {
 	// Implement getting logic here
 	query := `SELECT id, word, transcription, meaning, example, word_level, translation FROM words WHERE word = $1`
@@ -85,4 +113,27 @@ func (s *WordStorage) SaveWordWithBookConnection(ctx context.Context, book *Book
 	}
 
 	return nil
+}
+
+func (s *WordStorage) UpdateWords(ctx context.Context, wordDto *WordDto) (*WordDto, *DatabaseError) {
+	// Implement updating logic here
+	query := `UPDATE words SET word = $1, transcription = $2, meaning = $3, example = $4, word_level = $5, translations = $6 WHERE id = $7`
+
+	_, err := s.db.ExecContext(
+		ctx,
+		query,
+		wordDto.Word,
+		wordDto.Transcription,
+		wordDto.Meaning,
+		wordDto.Example,
+		wordDto.WordLevel,
+		wordDto.Translations,
+		wordDto.ID,
+	)
+
+	if err != nil {
+		return nil, ProcessErrorFromDatabase(err)
+	}
+
+	return wordDto, nil
 }

@@ -18,6 +18,17 @@ func (app *Application) getNewWordsForBookHandler(w http.ResponseWriter, r *http
 	ctx := r.Context()
 
 	words, e := app.Storage.Book.NewWordsUser(ctx, 1, bookID, 30)
+
+	for i := range words {
+		currentWord := words[i]
+		wordDto, e := app.Storage.Word.GetWordById(ctx, currentWord.ID)
+		if e != nil {
+			app.writeJsonDatabaseError(w, http.StatusInternalServerError, e)
+			return
+		}
+		currentWord.Word = wordDto.Word
+	}
+
 	if e != nil {
 		app.writeJsonDatabaseError(w, http.StatusInternalServerError, e)
 		return
