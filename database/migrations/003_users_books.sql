@@ -10,6 +10,6 @@ ADD
 
 -- +goose Down
 -- +goose StatementBegin
-ALTER TABLE posts DROP COLUMN user_id;
+ALTER TABLE books DROP COLUMN user_id;
 ALTER TABLE books DROP CONSTRAINT fk_user;
 -- +goose StatementEnd

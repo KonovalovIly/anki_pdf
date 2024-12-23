@@ -26,13 +26,13 @@ func GetContentFromPdf(path string) (string, error) {
 	return buf.String(), nil
 }
 
-func ProcessContent(content string) map[string]int {
+func ProcessContent(content string) (map[string]int, int) {
 	fmt.Println("Processing content...")
 	all_words := strings.Split(content, " ")
 	fmt.Println("Content Splited...")
-	m := getMapFromString(all_words)
+	m, wordCount := getMapFromString(all_words)
 	fmt.Println("Content Processed...")
-	return m
+	return m, wordCount
 }
 
 func processExtraChar(st string) (string, error) {
@@ -61,13 +61,15 @@ func processExtraChar(st string) (string, error) {
 	return buf.String(), nil
 }
 
-func getMapFromString(all_words []string) map[string]int {
+func getMapFromString(all_words []string) (map[string]int, int) {
 	m := make(map[string]int)
+	wordCount := 0
 	for _, word := range all_words {
 		wd, err := processExtraChar(word)
-		if err != nil {
+		if err != nil || wd == "" {
 			continue
 		} else {
+			wordCount++
 			i, ok := m[wd]
 			if ok {
 				m[wd] = i + 1
@@ -76,5 +78,5 @@ func getMapFromString(all_words []string) map[string]int {
 			}
 		}
 	}
-	return m
+	return m, wordCount
 }

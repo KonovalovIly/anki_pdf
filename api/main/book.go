@@ -1,40 +1,68 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
-	"os"
+	"strconv"
 
 	"github.com/KonovalovIly/anki_pdf/database/model"
+	"github.com/go-chi/chi/v5"
 )
+
+func (app *Application) bookGetHandler(w http.ResponseWriter, r *http.Request) {
+	bookID, err := strconv.ParseInt(chi.URLParam(r, "bookID"), 10, 64)
+	if err != nil || bookID <= 0 {
+		app.writeJsonError(w, http.StatusBadRequest, fmt.Errorf("Invalid book ID"))
+		return
+	}
+
+	bookDto, e := app.Storage.Book.GetBook(r.Context(), bookID)
+	if e != nil {
+		app.writeJsonDatabaseError(w, http.StatusInternalServerError, e)
+		return
+	}
+
+	app.jsonResponse(w, http.StatusAccepted, bookDto)
+}
 
 func (app *Application) bookUploadHandler(w http.ResponseWriter, r *http.Request) {
 	bookTitle := r.Header.Get("Book_Title")
 	if bookTitle == "" {
-		app.writeJsonError(w, http.StatusBadRequest, "Book title is required")
+		app.writeJsonError(w, http.StatusBadRequest, fmt.Errorf("Book title is required"))
 		return
 	}
 
 	file, fileHeader, err := r.FormFile("fileupload")
 	if err != nil {
-		app.writeJsonError(w, http.StatusBadRequest, "Error reading book file")
+		app.writeJsonError(w, http.StatusBadRequest, fmt.Errorf("Error reading book file"))
 		return
 	}
+
 	defer file.Close()
 
-	bookDto, err := app.Storage.Book.SaveBook(r.Context(), bookTitle, file, fileHeader.Filename)
-	if err != nil {
-		app.writeJsonError(w, http.StatusInternalServerError, err.Error())
+	bookDto, erro := app.Storage.Book.SaveBook(r.Context(), bookTitle, file, fileHeader.Filename)
+	if erro != nil {
+		app.writeJsonDatabaseError(w, http.StatusInternalServerError, erro)
 		return
 	}
+
 	wordsMap := bookDto.WordMap
 
-	for wd, _ := range wordsMap {
-		word := model.WordDto{
-			Word: wd,
+	for word := range wordsMap {
+		wordDto, err := app.Storage.Word.GetWord(r.Context(), word)
+
+		if err != nil && err.Typ == "no_row" {
+			wordDto = &model.WordDto{}
+			wordDto.Word = word
+			app.saveNewWord(r, wordDto)
+		} else if err != nil {
+			app.writeJsonDatabaseError(w, http.StatusInternalServerError, err)
+			return
 		}
-		_, err := app.Storage.Word.SaveWords(r.Context(), bookDto, &word)
+
+		err = app.Storage.Word.SaveWordWithBookConnection(r.Context(), bookDto, wordDto)
 		if err != nil {
-			app.writeJsonError(w, http.StatusInternalServerError, err.Error())
+			app.writeJsonDatabaseError(w, http.StatusInternalServerError, err)
 			return
 		}
 	}
@@ -42,11 +70,6 @@ func (app *Application) bookUploadHandler(w http.ResponseWriter, r *http.Request
 	app.jsonResponse(w, http.StatusAccepted, bookDto)
 }
 
-func (app *Application) bookDeleteHandler(w http.ResponseWriter, r *http.Request) {
-	err := os.Remove("./database/local/CSAPP_2016.pdf")
-	if err != nil {
-		app.writeJsonError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-	app.jsonResponse(w, http.StatusOK, nil)
+func (app *Application) saveNewWord(r *http.Request, wordDto *model.WordDto) {
+	app.Storage.Word.SaveWords(r.Context(), wordDto)
 }

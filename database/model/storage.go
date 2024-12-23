@@ -11,10 +11,13 @@ var QueryRowTimeout = time.Second * 5
 
 type Storage struct {
 	Book interface {
-		SaveBook(ctx context.Context, title string, book multipart.File, fileName string) (*BookDto, error)
+		GetBook(ctx context.Context, bookID int64) (*BookDto, *DatabaseError)
+		SaveBook(ctx context.Context, title string, book multipart.File, fileName string) (*BookDto, *DatabaseError)
 	}
 	Word interface {
-		SaveWords(ctx context.Context, book *BookDto, wordDto *WordDto) (*WordDto, error)
+		GetWord(ctx context.Context, text string) (*WordDto, *DatabaseError)
+		SaveWords(ctx context.Context, wordDto *WordDto) (*WordDto, *DatabaseError)
+		SaveWordWithBookConnection(ctx context.Context, book *BookDto, wordDto *WordDto) *DatabaseError
 	}
 }
 

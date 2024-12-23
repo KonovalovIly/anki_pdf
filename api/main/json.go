@@ -2,8 +2,10 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
+	"github.com/KonovalovIly/anki_pdf/database/model"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -29,12 +31,23 @@ func readJson(w http.ResponseWriter, r *http.Request, data any) error {
 	return decoder.Decode(data)
 }
 
-func (app *Application) writeJsonError(w http.ResponseWriter, status int, message string) error {
+func (app *Application) writeJsonError(w http.ResponseWriter, status int, err error) error {
 	type envelope struct {
 		Error string `json:"error"`
 	}
+	fmt.Print(err)
 
-	return writeJson(w, status, &envelope{Error: message})
+	return writeJson(w, status, &envelope{Error: err.Error()})
+}
+
+func (app *Application) writeJsonDatabaseError(w http.ResponseWriter, status int, err *model.DatabaseError) error {
+	type envelope struct {
+		Error string `json:"error"`
+		Type  string `json:"type"`
+	}
+	fmt.Print(err)
+
+	return writeJson(w, status, &envelope{Error: err.Error, Type: err.Typ})
 }
 
 func (app *Application) jsonResponse(w http.ResponseWriter, status int, data any) error {
