@@ -42,7 +42,7 @@ func (s *WordStorage) GetWordById(ctx context.Context, wordId int64) (*WordDto, 
 	)
 
 	if err != nil {
-		return nil, ProcessErrorFromDatabase(err)
+		return nil, ProcessErrorFromDatabase(err, "GetWordById:45")
 	}
 
 	return wordDto, nil
@@ -70,7 +70,7 @@ func (s *WordStorage) GetWord(ctx context.Context, text string) (*WordDto, *Data
 	)
 
 	if err != nil {
-		return nil, ProcessErrorFromDatabase(err)
+		return nil, ProcessErrorFromDatabase(err, "GetWord:73")
 	}
 
 	return wordDto, nil
@@ -91,7 +91,7 @@ func (s *WordStorage) SaveWords(ctx context.Context, wordDto *WordDto) (*WordDto
 	)
 
 	if err != nil {
-		return nil, ProcessErrorFromDatabase(err)
+		return nil, ProcessErrorFromDatabase(err, "SaveWords:94")
 	}
 
 	return wordDto, nil
@@ -109,7 +109,7 @@ func (s *WordStorage) SaveWordWithBookConnection(ctx context.Context, book *Book
 	)
 
 	if err != nil {
-		return ProcessErrorFromDatabase(err)
+		return ProcessErrorFromDatabase(err, "SaveWordWithBookConnection:112")
 	}
 
 	return nil
@@ -132,7 +132,7 @@ func (s *WordStorage) UpdateWords(ctx context.Context, wordDto *WordDto) (*WordD
 	)
 
 	if err != nil {
-		return nil, ProcessErrorFromDatabase(err)
+		return nil, ProcessErrorFromDatabase(err, "UpdateWords:135")
 	}
 
 	return wordDto, nil

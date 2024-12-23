@@ -41,7 +41,7 @@ func (s *BookStorage) GetBook(ctx context.Context, bookID int64) (*BookDto, *Dat
 	)
 
 	if err != nil {
-		return nil, ProcessErrorFromDatabase(err)
+		return nil, ProcessErrorFromDatabase(err, "GetBook:44")
 	}
 
 	return bookDto, nil
@@ -53,19 +53,19 @@ func (s *BookStorage) SaveBook(context context.Context, title string, file multi
 	err := saveBookToLocal(resultFileName, file)
 
 	if err != nil {
-		return nil, ProcessErrorFromDatabase(err)
+		return nil, ProcessErrorFromDatabase(err, "SaveBook:56")
 	}
 
 	bookDto, err := s.saveBookToDatabase(context, title)
 
 	if err != nil {
-		return nil, ProcessErrorFromDatabase(err)
+		return nil, ProcessErrorFromDatabase(err, "SaveBook:62")
 	}
 
 	// Implement processing logic here
 	content, err := processor.GetContentFromPdf(resultFileName)
 	if err != nil {
-		return nil, ProcessErrorFromDatabase(err)
+		return nil, ProcessErrorFromDatabase(err, "SaveBook:68")
 	}
 
 	bookDto.WordMap, bookDto.WordCount = processor.ProcessContent(content)
@@ -78,7 +78,7 @@ func (s *BookStorage) SaveBook(context context.Context, title string, file multi
 
 	err = deleteBookFromLocal(resultFileName)
 	if err != nil {
-		return nil, ProcessErrorFromDatabase(err)
+		return nil, ProcessErrorFromDatabase(err, "SaveBook:81")
 	}
 
 	return bookDto, nil
@@ -120,7 +120,7 @@ func (s *BookStorage) UpdateBook(ctx context.Context, book *BookDto) (*BookDto, 
 		book.ID,
 	)
 	if err != nil {
-		return nil, ProcessErrorFromDatabase(err)
+		return nil, ProcessErrorFromDatabase(err, "UpdateBook:123")
 	}
 	return book, nil
 }
@@ -162,7 +162,7 @@ func (s *BookStorage) NewWordsUser(ctx context.Context, userID int64, bookID int
 	)
 
 	if err != nil {
-		return nil, ProcessErrorFromDatabase(err)
+		return nil, ProcessErrorFromDatabase(err, "NewWordsUser:165")
 	}
 	defer rows.Close()
 	wordDtos := make([]*WordDto, 0)
@@ -173,7 +173,7 @@ func (s *BookStorage) NewWordsUser(ctx context.Context, userID int64, bookID int
 			&wordDto.Frequency,
 		)
 		if err != nil {
-			return nil, ProcessErrorFromDatabase(err)
+			return nil, ProcessErrorFromDatabase(err, "NewWordsUser:176")
 		}
 		wordDtos = append(wordDtos, wordDto)
 	}
