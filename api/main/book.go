@@ -5,7 +5,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/KonovalovIly/anki_pdf/database/model"
+	repository "github.com/KonovalovIly/anki_pdf/api/repository"
+	database_models "github.com/KonovalovIly/anki_pdf/database/model"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -27,8 +28,14 @@ func (app *Application) bookGetHandler(w http.ResponseWriter, r *http.Request) {
 
 func (app *Application) bookUploadHandler(w http.ResponseWriter, r *http.Request) {
 	bookTitle := r.Header.Get("Book_Title")
+	bookLang := r.Header.Get("Book_Lang")
 	if bookTitle == "" {
 		app.writeJsonError(w, http.StatusBadRequest, fmt.Errorf("Book title is required"))
+		return
+	}
+
+	if bookLang == "" {
+		app.writeJsonError(w, http.StatusBadRequest, fmt.Errorf("Book lang is required"))
 		return
 	}
 
@@ -39,41 +46,17 @@ func (app *Application) bookUploadHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	defer file.Close()
+	ctx := r.Context()
 
-	bookDto, erro := app.Storage.Book.SaveBook(r.Context(), bookTitle, file, fileHeader.Filename)
-	if erro != nil {
-		app.writeJsonDatabaseError(w, http.StatusInternalServerError, erro)
+	bookDto := &database_models.BookDto{
+		Title: bookTitle,
+	}
+
+	e := repository.ProcessUploadBook(ctx, bookDto, file, fileHeader.Filename, &app.Storage, 1)
+	if err != nil {
+		app.writeJsonDatabaseError(w, http.StatusBadRequest, e)
 		return
 	}
 
-	wordsMap := bookDto.WordMap
-
-	for word := range wordsMap {
-		wordDto, err := app.Storage.Word.GetWord(r.Context(), word)
-
-		if err != nil && err.Typ == "no_row" {
-			wordDto = &model.WordDto{}
-			wordDto.Word = word
-			_, err := app.saveNewWord(r, wordDto)
-			if err != nil {
-				app.writeJsonDatabaseError(w, http.StatusInternalServerError, err)
-				return
-			}
-		} else if err != nil {
-			app.writeJsonDatabaseError(w, http.StatusInternalServerError, err)
-			return
-		}
-
-		err = app.Storage.Word.SaveWordWithBookConnection(r.Context(), bookDto, wordDto)
-		if err != nil {
-			app.writeJsonDatabaseError(w, http.StatusInternalServerError, err)
-			return
-		}
-	}
-
 	app.jsonResponse(w, http.StatusAccepted, bookDto)
-}
-
-func (app *Application) saveNewWord(r *http.Request, wordDto *model.WordDto) (*model.WordDto, *model.DatabaseError) {
-	return app.Storage.Word.SaveWords(r.Context(), wordDto)
 }

@@ -1,4 +1,4 @@
-package main
+package database_utils
 
 import (
 	"context"

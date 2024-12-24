@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/KonovalovIly/anki_pdf/database/model"
+	database_models "github.com/KonovalovIly/anki_pdf/database/model"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -40,7 +40,7 @@ func (app *Application) writeJsonError(w http.ResponseWriter, status int, err er
 	return writeJson(w, status, &envelope{Error: err.Error()})
 }
 
-func (app *Application) writeJsonDatabaseError(w http.ResponseWriter, status int, err *model.DatabaseError) error {
+func (app *Application) writeJsonDatabaseError(w http.ResponseWriter, status int, err *database_models.DatabaseError) error {
 	type envelope struct {
 		Error string `json:"error"`
 		Type  string `json:"type"`

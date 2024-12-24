@@ -6,7 +6,8 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/KonovalovIly/anki_pdf/database/model"
+	"github.com/KonovalovIly/anki_pdf/database/storage"
+	database_utils "github.com/KonovalovIly/anki_pdf/database/utils"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
@@ -42,12 +43,12 @@ func SetupConfig() Config {
 	}
 }
 
-func SetupStorage(cfg Config) (model.Storage, *sql.DB) {
-	dbConn, err := New(cfg.Db.Addr, cfg.Db.MaxOpenConns, cfg.Db.MaxIdleConns, cfg.Db.MaxIdleTime)
+func SetupStorage(cfg Config) (storage.Storage, *sql.DB) {
+	dbConn, err := database_utils.New(cfg.Db.Addr, cfg.Db.MaxOpenConns, cfg.Db.MaxIdleConns, cfg.Db.MaxIdleTime)
 	if err != nil {
 		log.Panic("Error creating database connection %v", err)
 	}
-	return model.NewStorage(dbConn), dbConn
+	return storage.NewStorage(dbConn), dbConn
 }
 
 func GetString(key, fallback string) string {

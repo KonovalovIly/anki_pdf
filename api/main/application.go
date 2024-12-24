@@ -1,12 +1,12 @@
 package main
 
 import (
-	"github.com/KonovalovIly/anki_pdf/database/model"
+	"github.com/KonovalovIly/anki_pdf/database/storage"
 )
 
 type Application struct {
 	Config  Config
-	Storage model.Storage
+	Storage storage.Storage
 }
 
 type Config struct {

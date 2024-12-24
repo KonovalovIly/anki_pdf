@@ -17,7 +17,7 @@ func (app *Application) getNewWordsForBookHandler(w http.ResponseWriter, r *http
 	}
 	ctx := r.Context()
 
-	words, e := app.Storage.Book.NewWordsUser(ctx, 1, bookID, 30)
+	words, e := app.Storage.UserWord.NewWordsUser(ctx, 1, bookID, 30)
 
 	for i := range words {
 		currentWord := words[i]

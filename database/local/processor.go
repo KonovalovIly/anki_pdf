@@ -1,38 +1,36 @@
-package processor
+package database_local
 
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"strings"
 	"unicode"
 
 	"github.com/ledongthuc/pdf"
 )
 
-func GetContentFromPdf(path string) (string, error) {
-	f, r, err := pdf.Open(path)
-	// remember close file
-	defer f.Close()
+func GetContentFromPdf(fileName string) (map[string]int, int, error) {
+	f, r, err := pdf.Open(locationForFile + fileName)
+	m := make(map[string]int, 0)
+
 	if err != nil {
-		return "", err
+		return m, -1, err
 	}
+
+	defer f.Close()
+
 	var buf bytes.Buffer
 	b, err := r.GetPlainText()
-	if err != nil {
-		return "", err
-	}
-	buf.ReadFrom(b)
-	return buf.String(), nil
-}
 
-func ProcessContent(content string) (map[string]int, int) {
-	fmt.Println("Processing content...")
-	all_words := strings.Split(content, " ")
-	fmt.Println("Content Splited...")
+	if err != nil {
+		return m, -1, err
+	}
+
+	buf.ReadFrom(b)
+
+	all_words := strings.Split(buf.String(), " ")
 	m, wordCount := getMapFromString(all_words)
-	fmt.Println("Content Processed...")
-	return m, wordCount
+	return m, wordCount, nil
 }
 
 func processExtraChar(st string) (string, error) {

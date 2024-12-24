@@ -1,6 +1,6 @@
 package api_model
 
-import "github.com/KonovalovIly/anki_pdf/database/model"
+import database_models "github.com/KonovalovIly/anki_pdf/database/model"
 
 type WordApi struct {
 	ID            int64  `json:"id"`
@@ -13,7 +13,7 @@ type WordApi struct {
 	Frequency     int    `json:"frequency"`
 }
 
-func MapListDtoToApiWord(dto []*model.WordDto) []*WordApi {
+func MapListDtoToApiWord(dto []*database_models.WordDto) []*WordApi {
 	apiWords := make([]*WordApi, 0, len(dto))
 	for _, word := range dto {
 		apiWords = append(apiWords, MapDtoToApiWord(word))
@@ -21,7 +21,7 @@ func MapListDtoToApiWord(dto []*model.WordDto) []*WordApi {
 	return apiWords
 }
 
-func MapDtoToApiWord(dto *model.WordDto) *WordApi {
+func MapDtoToApiWord(dto *database_models.WordDto) *WordApi {
 	return &WordApi{
 		ID:            dto.ID,
 		Word:          dto.Word,
