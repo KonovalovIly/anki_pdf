@@ -1,4 +1,4 @@
-package main
+package route
 
 import (
 	"log"
@@ -9,7 +9,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 )
 
-func (app *Application) mount() http.Handler {
+func (app *Application) Mount() http.Handler {
 	r := chi.NewRouter()
 
 	r.Use(middleware.RequestID)
@@ -20,24 +20,15 @@ func (app *Application) mount() http.Handler {
 	r.Use(middleware.Timeout(60 * time.Second))
 
 	r.Route("/v1", func(r chi.Router) {
-
-		r.Get("/health", app.healthCheckHandler)
-
-		r.Route("/book", func(r chi.Router) {
-
-			r.Post("/upload", app.bookUploadHandler)
-
-			r.Route("/{bookID}", func(r chi.Router) {
-				r.Get("/", app.bookGetHandler)
-				r.Get("/new_words", app.getNewWordsForBookHandler)
-			})
-		})
+		app.HealthHandlersSetup(r)
+		app.WordsHandlersSetup(r)
+		app.BookHandlerSetup(r)
 	})
 
 	return r
 }
 
-func (app *Application) run(mux http.Handler) error {
+func (app *Application) Run(mux http.Handler) error {
 
 	srv := &http.Server{
 		Addr:         app.Config.Addr,

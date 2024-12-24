@@ -1,4 +1,4 @@
-package main
+package route
 
 import (
 	"github.com/KonovalovIly/anki_pdf/database/storage"

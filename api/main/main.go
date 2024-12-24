@@ -7,5 +7,5 @@ import (
 func main() {
 	app, db := SetupEnvironment()
 	defer db.Close()
-	log.Fatal(app.run(app.mount()))
+	log.Fatal(app.Run(app.Mount()))
 }

@@ -1,4 +1,4 @@
-package main
+package route
 
 import (
 	"fmt"
@@ -6,42 +6,52 @@ import (
 	"strconv"
 
 	repository "github.com/KonovalovIly/anki_pdf/api/repository"
+	api_utils "github.com/KonovalovIly/anki_pdf/api/utils"
 	database_models "github.com/KonovalovIly/anki_pdf/database/model"
 	"github.com/go-chi/chi/v5"
 )
 
+func (app *Application) BookHandlerSetup(r chi.Router) {
+
+	r.Post("/book/upload", app.bookUploadHandler)
+
+	r.Route("/{bookID}", func(r chi.Router) {
+		r.Get("/", app.bookGetHandler)
+	})
+}
+
 func (app *Application) bookGetHandler(w http.ResponseWriter, r *http.Request) {
 	bookID, err := strconv.ParseInt(chi.URLParam(r, "bookID"), 10, 64)
 	if err != nil || bookID <= 0 {
-		app.writeJsonError(w, http.StatusBadRequest, fmt.Errorf("Invalid book ID"))
+		api_utils.WriteJsonError(w, http.StatusBadRequest, fmt.Errorf("invalid book ID"))
 		return
 	}
 
 	bookDto, e := app.Storage.Book.GetBook(r.Context(), bookID)
 	if e != nil {
-		app.writeJsonDatabaseError(w, http.StatusInternalServerError, e)
+		api_utils.WriteJsonDatabaseError(w, http.StatusInternalServerError, e)
 		return
 	}
 
-	app.jsonResponse(w, http.StatusAccepted, bookDto)
+	api_utils.JsonResponse(w, http.StatusAccepted, bookDto)
 }
 
 func (app *Application) bookUploadHandler(w http.ResponseWriter, r *http.Request) {
 	bookTitle := r.Header.Get("Book_Title")
 	bookLang := r.Header.Get("Book_Lang")
 	if bookTitle == "" {
-		app.writeJsonError(w, http.StatusBadRequest, fmt.Errorf("Book title is required"))
+		api_utils.WriteJsonError(w, http.StatusBadRequest, fmt.Errorf("book title is required"))
 		return
 	}
 
 	if bookLang == "" {
-		app.writeJsonError(w, http.StatusBadRequest, fmt.Errorf("Book lang is required"))
+		api_utils.WriteJsonError(w, http.StatusBadRequest, fmt.Errorf("book lang is required"))
 		return
 	}
 
 	file, fileHeader, err := r.FormFile("fileupload")
 	if err != nil {
-		app.writeJsonError(w, http.StatusBadRequest, fmt.Errorf("Error reading book file"))
+		api_utils.WriteJsonError(w, http.StatusBadRequest, fmt.Errorf("error reading book file"))
 		return
 	}
 
@@ -53,10 +63,10 @@ func (app *Application) bookUploadHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	e := repository.ProcessUploadBook(ctx, bookDto, file, fileHeader.Filename, &app.Storage, 1)
-	if err != nil {
-		app.writeJsonDatabaseError(w, http.StatusBadRequest, e)
+	if e != nil {
+		api_utils.WriteJsonDatabaseError(w, http.StatusBadRequest, e)
 		return
 	}
 
-	app.jsonResponse(w, http.StatusAccepted, bookDto)
+	api_utils.JsonResponse(w, http.StatusAccepted, bookDto)
 }
