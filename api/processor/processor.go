@@ -58,6 +58,9 @@ func processExtraChar(st string) (string, error) {
 			return "", errors.New("invalid string " + st)
 		}
 	}
+	if buf.Len() > 45 {
+		return "", errors.New("string too long " + st)
+	}
 	return buf.String(), nil
 }
 

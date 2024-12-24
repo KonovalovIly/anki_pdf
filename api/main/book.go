@@ -54,7 +54,11 @@ func (app *Application) bookUploadHandler(w http.ResponseWriter, r *http.Request
 		if err != nil && err.Typ == "no_row" {
 			wordDto = &model.WordDto{}
 			wordDto.Word = word
-			app.saveNewWord(r, wordDto)
+			_, err := app.saveNewWord(r, wordDto)
+			if err != nil {
+				app.writeJsonDatabaseError(w, http.StatusInternalServerError, err)
+				return
+			}
 		} else if err != nil {
 			app.writeJsonDatabaseError(w, http.StatusInternalServerError, err)
 			return
@@ -70,6 +74,6 @@ func (app *Application) bookUploadHandler(w http.ResponseWriter, r *http.Request
 	app.jsonResponse(w, http.StatusAccepted, bookDto)
 }
 
-func (app *Application) saveNewWord(r *http.Request, wordDto *model.WordDto) {
-	app.Storage.Word.SaveWords(r.Context(), wordDto)
+func (app *Application) saveNewWord(r *http.Request, wordDto *model.WordDto) (*model.WordDto, *model.DatabaseError) {
+	return app.Storage.Word.SaveWords(r.Context(), wordDto)
 }

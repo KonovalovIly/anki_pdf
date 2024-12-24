@@ -3,6 +3,7 @@ package model
 import (
 	"context"
 	"database/sql"
+	"log"
 )
 
 type WordDto struct {
@@ -99,6 +100,7 @@ func (s *WordStorage) SaveWords(ctx context.Context, wordDto *WordDto) (*WordDto
 
 func (s *WordStorage) SaveWordWithBookConnection(ctx context.Context, book *BookDto, wordDto *WordDto) *DatabaseError {
 	query := `INSERT INTO books_words (book_id, word_id, frequency) VALUES ($1, $2, $3)`
+	log.Printf("book.ID : %d, wordDto.ID : %d", book.ID, wordDto.ID)
 
 	_, err := s.db.ExecContext(
 		ctx,
