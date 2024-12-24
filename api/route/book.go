@@ -12,11 +12,12 @@ import (
 )
 
 func (app *Application) BookHandlerSetup(r chi.Router) {
+	r.Route("/book", func(r chi.Router) {
+		r.Post("/upload", app.bookUploadHandler)
 
-	r.Post("/book/upload", app.bookUploadHandler)
-
-	r.Route("/{bookID}", func(r chi.Router) {
-		r.Get("/", app.bookGetHandler)
+		r.Route("/{bookID}", func(r chi.Router) {
+			r.Get("/", app.bookGetHandler)
+		})
 	})
 }
 

@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	api_model "github.com/KonovalovIly/anki_pdf/api/model"
+	"github.com/KonovalovIly/anki_pdf/api/repository"
 	api_utils "github.com/KonovalovIly/anki_pdf/api/utils"
 	"github.com/go-chi/chi/v5"
 )
@@ -35,6 +36,11 @@ func (app *Application) getNewWordsForBookHandler(w http.ResponseWriter, r *http
 	}
 
 	ctx := r.Context()
+	_, e := app.Storage.Book.GetBook(ctx, bookId)
+	if e != nil {
+		api_utils.WriteJsonDatabaseError(w, http.StatusInternalServerError, e)
+		return
+	}
 
 	words, e := app.Storage.UserWord.NewWordsUser(ctx, 1, bookId, count)
 
@@ -45,7 +51,16 @@ func (app *Application) getNewWordsForBookHandler(w http.ResponseWriter, r *http
 			api_utils.WriteJsonDatabaseError(w, http.StatusInternalServerError, e)
 			return
 		}
-		currentWord.Word = wordDto.Word
+
+		if !wordDto.Meaning.Valid {
+			repository.GetWordDetail(wordDto)
+			_ = app.Storage.Word.UpdateWord(ctx, wordDto)
+		}
+
+		words[i].Word = wordDto.Word
+		words[i].Meaning = wordDto.Meaning
+		words[i].Example = wordDto.Example
+		words[i].WordLevel = wordDto.WordLevel
 	}
 
 	if e != nil {

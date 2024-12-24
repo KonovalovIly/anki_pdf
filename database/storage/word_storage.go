@@ -39,7 +39,7 @@ func (s *WordStorage) GetWordById(ctx context.Context, wordId int64) (*database_
 		&wordDto.Meaning,
 		&wordDto.Example,
 		&wordDto.WordLevel,
-		&wordDto.Translations,
+		&wordDto.Translation,
 	)
 
 	if err != nil {
@@ -76,7 +76,7 @@ func (s *WordStorage) GetWordByName(ctx context.Context, text string) (*database
 		&wordDto.Meaning,
 		&wordDto.Example,
 		&wordDto.WordLevel,
-		&wordDto.Translations,
+		&wordDto.Translation,
 	)
 
 	if err != nil {
@@ -114,19 +114,21 @@ func (s *WordStorage) UpdateWord(ctx context.Context, wordDto *database_models.W
 		meaning = $3,
 		example = $4,
 		word_level = $5,
-		translations = $6
+		translation = $6
 		WHERE id = $7
 	`
+	ctx, cancel := context.WithTimeout(ctx, QueryRowTimeout)
+	defer cancel()
 
 	_, err := s.db.ExecContext(
 		ctx,
 		query,
 		wordDto.Word,
-		wordDto.Transcription,
-		wordDto.Meaning,
-		wordDto.Example,
-		wordDto.WordLevel,
-		wordDto.Translations,
+		wordDto.Transcription.String,
+		wordDto.Meaning.String,
+		wordDto.Example.String,
+		wordDto.WordLevel.String,
+		wordDto.Translation.String,
 		wordDto.ID,
 	)
 

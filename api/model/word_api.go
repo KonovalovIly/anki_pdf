@@ -9,7 +9,7 @@ type WordApi struct {
 	Meaning       string `json:"meaning"`
 	Example       string `json:"example"`
 	WordLevel     string `json:"word_level"`
-	Translations  string `json:"translations"`
+	Translation  string `json:"translation"`
 	Frequency     int    `json:"frequency"`
 }
 
@@ -29,7 +29,7 @@ func MapDtoToApiWord(dto *database_models.WordDto) *WordApi {
 		Meaning:       dto.Meaning.String,
 		Example:       dto.Example.String,
 		WordLevel:     dto.WordLevel.String,
-		Translations:  dto.Translations.String,
+		Translation:  dto.Translation.String,
 		Frequency:     int(dto.Frequency.Int16),
 	}
 }

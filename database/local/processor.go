@@ -37,7 +37,7 @@ func processExtraChar(st string) (string, error) {
 	var buf bytes.Buffer
 	var prev_symb = false
 	for _, char := range st {
-		if unicode.IsLetter(char) {
+		if (char > 'a' && char <= 'z') || (char > 'A' && char <= 'Z') {
 			prev_symb = false
 			buf.WriteRune(unicode.ToLower(char))
 		} else if char == ',' || char == '.' || char == '!' || char == '?' || char == ' ' || char == ':' || char == ';' || char == '(' || char == ')' || char == '\n' || char == '"' || char == '`' {
