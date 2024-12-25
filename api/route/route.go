@@ -23,6 +23,7 @@ func (app *Application) Mount() http.Handler {
 		app.HealthHandlersSetup(r)
 		app.WordsHandlersSetup(r)
 		app.BookHandlerSetup(r)
+		app.UserHandlerSetup(r)
 	})
 
 	return r
