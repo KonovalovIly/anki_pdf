@@ -2,12 +2,12 @@ package route
 
 import (
 	"fmt"
-	"net/http"
-
 	api_model "github.com/KonovalovIly/anki_pdf/api/model"
 	"github.com/KonovalovIly/anki_pdf/api/repository"
 	api_utils "github.com/KonovalovIly/anki_pdf/api/utils"
 	"github.com/go-chi/chi/v5"
+	"net/http"
+	"strconv"
 )
 
 func (app *Application) WordsHandlersSetup(r chi.Router) {
@@ -88,5 +88,19 @@ func (app *Application) getSearchHandler(w http.ResponseWriter, r *http.Request)
 	api_utils.JsonResponse(w, http.StatusOK, api_model.MapDtoToApiWord(wordDto))
 }
 func (app *Application) getMarkAsLearnedHandler(w http.ResponseWriter, r *http.Request) {
+	word := r.URL.Query().Get("word_id")
+	wordID, err := strconv.ParseInt(word, 10, 64)
+	if err != nil {
+		api_utils.WriteJsonError(w, http.StatusInternalServerError, err)
+		return
+	}
 
+	ctx := r.Context()
+	var userID int64 = 1
+	e := app.Storage.UserWord.MarkAsLearned(ctx, userID, wordID)
+	if e != nil {
+		api_utils.WriteJsonDatabaseError(w, http.StatusInternalServerError, e)
+		return
+	}
+	api_utils.JsonResponse(w, http.StatusOK, true)
 }

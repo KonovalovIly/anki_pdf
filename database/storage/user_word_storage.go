@@ -86,3 +86,24 @@ func (s *UserWordStorage) KnownWordsBook(ctx context.Context, userID int64, book
 	}
 	return bookWithNounWords, nil
 }
+func (s *UserWordStorage) MarkAsLearned(ctx context.Context, userID int64, wordID int64) *database_models.DatabaseError {
+	query := `INSERT INTO users_words (user_id,word_id,is_learned)
+VALUES ($1,$2,$3)
+`
+	ctx, cancel := context.WithTimeout(ctx, QueryRowTimeout)
+	defer cancel()
+	_, err := s.db.ExecContext(
+		ctx,
+		query,
+		userID,
+		wordID,
+		true,
+	)
+
+	if err != nil {
+		return database_models.ProcessErrorFromDatabase(err, "SaveWords:QueryRowContext")
+	}
+
+	return nil
+
+}
