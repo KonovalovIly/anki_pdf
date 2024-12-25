@@ -12,6 +12,11 @@ import (
 
 func (app *Application) WordsHandlersSetup(r chi.Router) {
 	r.Get("/new_words", app.getNewWordsForBookHandler)
+	r.Route("/words", func(r chi.Router) {
+		r.Get("/search", app.getSearchHandler)
+		r.Get("/mark_as_learned", app.getMarkAsLearnedHandler)
+
+	})
 }
 
 func (app *Application) getNewWordsForBookHandler(w http.ResponseWriter, r *http.Request) {
@@ -69,4 +74,19 @@ func (app *Application) getNewWordsForBookHandler(w http.ResponseWriter, r *http
 	}
 
 	api_utils.JsonResponse(w, http.StatusOK, api_model.MapListDtoToApiWord(words))
+}
+func (app *Application) getSearchHandler(w http.ResponseWriter, r *http.Request) {
+
+	word := r.URL.Query().Get("word")
+	ctx := r.Context()
+	wordDto, e := app.Storage.Word.GetWordByName(ctx, word)
+	if e != nil {
+		api_utils.WriteJsonDatabaseError(w, http.StatusInternalServerError, e)
+		return
+	}
+
+	api_utils.JsonResponse(w, http.StatusOK, api_model.MapDtoToApiWord(wordDto))
+}
+func (app *Application) getMarkAsLearnedHandler(w http.ResponseWriter, r *http.Request) {
+
 }
