@@ -17,6 +17,7 @@ func (app *Application) BookHandlerSetup(r chi.Router) {
 
 		r.Route("/{bookID}", func(r chi.Router) {
 			r.Get("/", app.bookGetHandler)
+			r.Get("/known_words", app.knownWordsHandler)
 		})
 	})
 }
@@ -70,4 +71,22 @@ func (app *Application) bookUploadHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	api_utils.JsonResponse(w, http.StatusAccepted, bookDto)
+}
+
+func (app *Application) knownWordsHandler(w http.ResponseWriter, r *http.Request) {
+	bookID, err := strconv.ParseInt(chi.URLParam(r, "bookID"), 10, 64)
+	if err != nil || bookID <= 0 {
+		api_utils.WriteJsonError(w, http.StatusBadRequest, fmt.Errorf("invalid book ID"))
+		return
+	}
+
+	ctx := r.Context()
+	words, e := app.Storage.UserWord.KnownWordsBook(ctx, 1, bookID)
+
+	if e != nil {
+		api_utils.WriteJsonDatabaseError(w, http.StatusInternalServerError, e)
+		return
+	}
+
+	api_utils.JsonResponse(w, http.StatusOK, words)
 }

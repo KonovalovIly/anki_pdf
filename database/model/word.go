@@ -11,6 +11,6 @@ type WordDto struct {
 	Meaning       sql.NullString `json:"meaning"`
 	Example       sql.NullString `json:"example"`
 	WordLevel     sql.NullString `json:"word_level"`
-	Translation  sql.NullString `json:"translation"`
+	Translation   sql.NullString `json:"translation"`
 	Frequency     sql.NullInt16  `json:"frequency"`
 }

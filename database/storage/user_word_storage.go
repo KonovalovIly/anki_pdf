@@ -55,3 +55,34 @@ func (s *UserWordStorage) NewWordsUser(ctx context.Context, userID int64, bookID
 
 	return wordDtos, nil
 }
+
+func (s *UserWordStorage) KnownWordsBook(ctx context.Context, userID int64, bookID int64) (*database_models.BookWithNounWords, *database_models.DatabaseError) {
+	query := `
+        SELECT b.book_id, SUM (b.frequency), bb.title
+		FROM books_words b
+		JOIN users_words u ON b.word_id=u.word_id
+		JOIN books bb ON b.book_id = bb.id
+		WHERE u.user_id = $1 AND u.is_learned = TRUE AND b.book_id = $2
+		GROUP BY b.book_id, bb.title;
+    `
+
+	ctx, cancel := context.WithTimeout(ctx, QueryRowTimeout)
+	defer cancel()
+
+	bookWithNounWords := &database_models.BookWithNounWords{}
+	err := s.db.QueryRowContext(
+		ctx,
+		query,
+		userID,
+		bookID,
+	).Scan(
+		&bookWithNounWords.ID,
+		&bookWithNounWords.AlreadyKnownWords,
+		&bookWithNounWords.Title,
+	)
+
+	if err != nil {
+		return nil, database_models.ProcessErrorFromDatabase(err, "KnownWordsBook:QueryRowContext")
+	}
+	return bookWithNounWords, nil
+}

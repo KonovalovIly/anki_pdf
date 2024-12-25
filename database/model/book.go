@@ -7,3 +7,8 @@ type BookDto struct {
 	WordCount int            `json:"word_count"`
 	WordMap   map[string]int `json:"-"`
 }
+
+type BookWithNounWords struct {
+	BookDto
+	AlreadyKnownWords int `json:"already_known_percent"`
+}

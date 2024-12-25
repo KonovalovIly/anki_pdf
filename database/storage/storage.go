@@ -30,12 +30,13 @@ type Storage struct {
 
 	UserWord interface {
 		NewWordsUser(ctx context.Context, userID int64, bookID int64, count int) ([]*database_models.WordDto, *database_models.DatabaseError)
+		KnownWordsBook(ctx context.Context, userID int64,bookID int64) (*database_models.BookWithNounWords, *database_models.DatabaseError)
 	}
 
 	User interface {
         GetUser(ctx context.Context, userID int64) (*database_models.UserDto, *database_models.DatabaseError)
 		SaveUser(ctx context.Context, userDto *database_models.UserDto) *database_models.DatabaseError
-    }
+	}
 }
 
 func NewStorage(db *sql.DB) Storage {
@@ -44,5 +45,6 @@ func NewStorage(db *sql.DB) Storage {
 		Word:     &WordStorage{db: db},
 		BookWord: &BookWordStorage{db: db},
 		UserWord: &UserWordStorage{db: db},
+		User:     &UserStorage{db: db},
 	}
 }
